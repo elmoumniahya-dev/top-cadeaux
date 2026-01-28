@@ -3,117 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top Cadeaux | Wholesale Hub</title>
+    <title>Top Cadeaux | Wholesale</title>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --gold: #D4AF37; --bg: #050505; --card: #121212; --green: #25d366; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: white; margin: 0; }
-        
-        .navbar { background: #000; padding: 15px 5%; border-bottom: 2px solid var(--gold); display: flex; justify-content: center; align-items: center; position: sticky; top:0; z-index:100; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .logo { color:var(--gold); font-weight:bold; font-size:26px; cursor: pointer; user-select: none; letter-spacing: 1px; }
-        
-        .container { padding: 40px 5%; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; }
-        
-        .product-card { background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid #222; transition: 0.3s; display: flex; flex-direction: column; }
-        .product-card:hover { border-color: var(--gold); transform: translateY(-5px); }
-        .img-box { background: #fff; height: 230px; display: flex; align-items: center; justify-content: center; padding: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: white; margin: 0; padding-bottom: 50px; }
+        .navbar { background: #000; padding: 15px; border-bottom: 2px solid var(--gold); text-align: center; position: sticky; top:0; z-index:100; }
+        .logo { color:var(--gold); font-weight:bold; font-size:24px; cursor: pointer; text-transform: uppercase; }
+        .container { padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+        .product-card { background: var(--card); border-radius: 10px; overflow: hidden; border: 1px solid #222; text-align: center; }
+        .img-box { background: #fff; height: 150px; display: flex; align-items: center; justify-content: center; }
         .img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .details { padding: 10px; }
+        .price { color: var(--gold); font-weight: bold; font-size: 18px; margin: 5px 0; }
+        .order-btn { background: var(--green); color: white; width: 100%; padding: 8px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
         
-        .details { padding: 15px; text-align: center; }
-        .price-label { color: var(--gold); font-size: 22px; font-weight: bold; }
-        
-        .qty-wrapper { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 15px 0; background: #1a1a1a; padding: 8px; border-radius: 8px; }
-        .qty-btn { background: var(--gold); border: none; width: 35px; height: 35px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 20px; }
-        
-        .order-btn { background: var(--green); color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.2s; }
-        .order-btn:hover { background: #1da851; }
-
-        /* Admin Panel - Scrolling Area */
-        #admin-panel { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 999; padding: 20px; }
-        .admin-scroll { height: 75vh; overflow-y: auto; margin-bottom: 20px; padding: 10px; border: 1px solid #333; }
-        .edit-item { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-right: 4px solid var(--gold); }
-        .edit-item input { width: 95%; padding: 10px; margin: 5px 0; background: #000; color: white; border: 1px solid #444; border-radius: 5px; }
-        
-        .admin-footer { display: flex; gap: 10px; }
+        /* Admin Panel */
+        #admin-panel { display: none; position: fixed; inset: 0; background: #000; z-index: 1000; padding: 20px; overflow-y: auto; }
+        .edit-item { background: #111; padding: 15px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--gold); }
+        .edit-item input { width: 100%; padding: 10px; margin: 5px 0; background: #222; color: white; border: 1px solid #444; border-radius: 5px; box-sizing: border-box; }
+        .admin-btns { position: sticky; bottom: 0; background: #000; padding: 10px 0; display: flex; gap: 10px; }
+        .save-btn { background: var(--gold); color: black; flex: 2; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .close-btn { background: #444; color: white; flex: 1; padding: 15px; border: none; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<nav class="navbar">
-    <div class="logo" id="logo-trigger" onclick="adminTrigger()">TOP CADEAUX 🎁</div>
-</nav>
+<nav class="navbar"><div class="logo" onclick="adminTrigger()">TOP CADEAUX 🎁</div></nav>
 
 <div class="container">
-    <div class="grid" id="main-grid"></div>
+    <div class="grid" id="main-grid">
+        </div>
 </div>
 
 <div id="admin-panel">
-    <h2 style="color:var(--gold); text-align: center;">لوحة التحكم (100 منتج) ⚙️</h2>
-    <div class="admin-scroll" id="edit-area"></div>
-    <div class="admin-footer">
-        <button onclick="saveAndClose()" style="background:var(--gold); padding:18px; border:none; flex: 2; border-radius: 10px; cursor:pointer; font-weight:bold; font-size: 16px;">حفظ كل التغييرات ✅</button>
-        <button onclick="closeAdmin()" style="background:#444; color:white; padding:18px; border:none; flex: 1; border-radius: 10px; cursor:pointer;">إلغاء</button>
+    <h2 style="color:var(--gold)">لوحة التحكم ⚙️</h2>
+    <p style="font-size: 12px; color: #888;">عمر السمية، رابط الصورة، والثمن. (الثمن 0 يعني السلعة مخفية)</p>
+    <div id="edit-area"></div>
+    <div class="admin-btns">
+        <button class="save-btn" onclick="saveToFirebase()">حفظ التغييرات ✅</button>
+        <button class="close-btn" onclick="closeAdmin()">إغلاق</button>
     </div>
 </div>
 
 <script>
-    // المنتجات الأساسية
-    const baseProducts = [
-        { id: 1, name: "طقم الورد الأحمر الملكي", price: 3600, img: "https://i.ibb.co/tTCH3m7q/1000137847.jpg" },
-        { id: 2, name: "منظم الساعات الفاخر", price: 4800, img: "https://i.ibb.co/kVVyxhXh/1000137841.jpg" },
-        { id: 3, name: "علبة التنظيم - أسود", price: 3000, img: "https://i.ibb.co/yng0GDC4/1000137840.jpg" },
-        { id: 4, name: "طقم الورد - أزرق", price: 3400, img: "https://i.ibb.co/jZb2F881/1000137846.jpg" }
-    ];
+    // معلومات Firebase الخاصة بك (يحيى)
+    const firebaseConfig = {
+        apiKey: "AIzaSyBb1FQI83PJh77Iq2i74xIjs0qB0RrUPu4",
+        authDomain: "top-cadeaux-24b7a.firebaseapp.com",
+        databaseURL: "https://top-cadeaux-24b7a-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "top-cadeaux-24b7a",
+        storageBucket: "top-cadeaux-24b7a.firebasestorage.app",
+        messagingSenderId: "703701346169",
+        appId: "1:703701346169:web:b14546cd7fe4e00b9431a8"
+    };
 
-    // إضافة 100 بلاصة خاوية
-    const totalSlots = 100;
-    const initialData = [...baseProducts];
-    for(let i = baseProducts.length + 1; i <= totalSlots; i++) {
-        initialData.push({ id: i, name: "", price: 0, img: "" });
-    }
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    let products = [];
 
-    let products = JSON.parse(localStorage.getItem('topCadeaux_v100')) || initialData;
+    // جلب البيانات مباشرة من Firebase
+    db.ref('products').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            products = data;
+            render();
+        } else {
+            // أول مرة: إنشاء 100 مكان فارغ
+            products = Array.from({length: 100}, (_, i) => ({
+                id: i, name: "", price: 0, img: "https://via.placeholder.com/150"
+            }));
+            db.ref('products').set(products);
+        }
+    });
 
     function render() {
         const grid = document.getElementById('main-grid');
-        // عرض المنتجات اللي فيها ثمن فقط
-        const activeProducts = products.filter(p => p.price > 0 && p.name !== "");
+        // عرض السلعة اللي ثمنها أكبر من 0 فقط
+        const activeProducts = products.filter(p => p.price > 0);
         
-        if (activeProducts.length === 0) {
-            grid.innerHTML = "<p style='text-align:center; width:100%; color:#555;'>المتجر فارغ حالياً. ادخل للوحة التحكم لإضافة منتجات.</p>";
+        if(activeProducts.length === 0) {
+            grid.innerHTML = "<p style='text-align:center; width:100%; color:#666;'>المتجر فارغ حالياً. اضغط على اللوغو لإضافة سلع.</p>";
             return;
         }
 
         grid.innerHTML = activeProducts.map(p => `
             <div class="product-card">
-                <div class="img-box"><img src="${p.img || 'https://via.placeholder.com/300?text=No+Image'}"></div>
+                <div class="img-box"><img src="${p.img}" onerror="this.src='https://via.placeholder.com/150'"></div>
                 <div class="details">
-                    <h3>${p.name}</h3>
-                    <span class="price-label">${p.price} DH <small style="font-size:12px">/ باكية</small></span>
-                    <div class="qty-wrapper">
-                        <button class="qty-btn" onclick="updateQtyUI(${p.id}, 1)">+</button>
-                        <span class="qty-val" id="qty-${p.id}">1</span>
-                        <button class="qty-btn" onclick="updateQtyUI(${p.id}, -1)">-</button>
-                    </div>
-                    <button class="order-btn" onclick="sendOrder(${p.id})">اطلب عبر واتساب</button>
+                    <h3 style="font-size:14px; margin:5px 0;">${p.name}</h3>
+                    <div class="price">${p.price} DH</div>
+                    <button class="order-btn" onclick="order('${p.name}', ${p.price})">
+                        <i class="fab fa-whatsapp"></i> طلب الآن
+                    </button>
                 </div>
             </div>
         `).join('');
     }
 
-    function updateQtyUI(id, delta) {
-        const el = document.getElementById(`qty-${id}`);
-        let val = parseInt(el.innerText);
-        if(val + delta >= 1) el.innerText = val + delta;
+    function order(name, price) {
+        const phone = "212631491234"; // رقم واتساب
+        const msg = encodeURIComponent(`السلام عليكم، بغيت نطلب:\nالمنتج: ${name}\nالثمن: ${price} DH`);
+        window.open(`https://wa.me/${phone}?text=${msg}`);
     }
 
+    // نظام الدخول للآدمين
     let clicks = 0;
     function adminTrigger() {
         clicks++;
         if(clicks === 5) {
+            if(prompt("كلمة المرور:") === "top@2030") openAdmin();
             clicks = 0;
-            if(prompt("كلمة المرور الإدارية:") === "top@2030") openAdmin();
         }
         setTimeout(() => clicks = 0, 3000);
     }
@@ -123,38 +126,29 @@
         const area = document.getElementById('edit-area');
         area.innerHTML = products.map((p, i) => `
             <div class="edit-item">
-                <strong style="color:var(--gold)">منتج #${p.id}</strong>
+                <strong>المنتج رقم ${i+1}</strong>
                 <input type="text" id="n-${i}" value="${p.name}" placeholder="اسم المنتج">
-                <input type="text" id="img-${i}" value="${p.img}" placeholder="رابط الصورة (ImgBB)">
-                <input type="number" id="p-${i}" value="${p.price}" placeholder="الثمن بالدرهم (0 للإخفاء)">
+                <input type="text" id="img-${i}" value="${p.img}" placeholder="رابط الصورة">
+                <input type="number" id="p-${i}" value="${p.price}" placeholder="الثمن (DH)">
             </div>
         `).join('');
     }
 
-    function saveAndClose() {
-        products = products.map((p, i) => ({
-            id: p.id,
+    function saveToFirebase() {
+        const updated = products.map((p, i) => ({
+            id: i,
             name: document.getElementById(`n-${i}`).value,
             img: document.getElementById(`img-${i}`).value,
             price: parseFloat(document.getElementById(`p-${i}`).value) || 0
         }));
-        localStorage.setItem('topCadeaux_v100', JSON.stringify(products));
-        render();
-        closeAdmin();
-        alert("تم تحديث المتجر بنجاح! ✅");
+
+        db.ref('products').set(updated).then(() => {
+            alert("تم الحفظ بنجاح! السلعة غتبان عند كاع الناس دابا.");
+            closeAdmin();
+        }).catch(err => alert("خطأ: تأكد من تفعيل Realtime Database في Firebase"));
     }
 
     function closeAdmin() { document.getElementById('admin-panel').style.display = 'none'; }
-
-    function sendOrder(id) {
-        const p = products.find(x => x.id === id);
-        const qty = document.getElementById(`qty-${id}`).innerText;
-        const total = p.price * qty;
-        const msg = `طلب جملة جديد 🎁\n\n📦 المنتج: ${p.name}\n🔢 الكمية: ${qty} باكية\n💰 المجموع: ${total} DH\n🖼️ الصورة: ${p.img}`;
-        window.open(`https://wa.me/212631491245?text=${encodeURIComponent(msg)}`);
-    }
-
-    render();
 </script>
 </body>
 </html>
